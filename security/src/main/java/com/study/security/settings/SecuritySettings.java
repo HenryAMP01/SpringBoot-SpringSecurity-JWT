@@ -1,36 +1,38 @@
-package com.study.security.securityconfig;
+package com.study.security.settings;
 
-import com.study.security.securityconfig.jwt.JwtAuthenticationFilter;
-import com.study.security.securityconfig.jwt.JwtAuthorizationFilter;
-import com.study.security.securityconfig.jwt.JwtService;
+import com.study.security.settings.filter.JwtAuthenticationFilter;
+import com.study.security.settings.filter.JwtAuthorizationFilter;
+import com.study.security.settings.filter.SecondAuthenticationFilter;
+import com.study.security.settings.jwt.JwtService;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
-import org.springframework.security.crypto.password.PasswordEncoder;
+
 
 @EnableWebSecurity
-public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
-
-    @Autowired private UserDetailsService userDetailsService;
+public class SecuritySettings extends WebSecurityConfigurerAdapter{
 
     @Autowired private JwtService jwtService;
 
-    @Bean
-    public PasswordEncoder passwordEncoder(){
-        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
-    }
+    @Autowired
+    @Qualifier(value = "firstAuthenticationProvider")
+    private AuthenticationProvider firstAuthenticationProvider;
+
+    @Autowired
+    @Qualifier(value = "secondAuthenticationProvider")
+    private AuthenticationProvider secondAuthenticationProvider;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService).passwordEncoder((passwordEncoder()));
+        auth.authenticationProvider(firstAuthenticationProvider)
+        .authenticationProvider(secondAuthenticationProvider);
     }
 
     @Override
@@ -39,12 +41,14 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
         csrf().disable()
         .authorizeRequests()
             .antMatchers(HttpMethod.POST, "/api/auth").permitAll()
+            .antMatchers(HttpMethod.POST, "/api/users/**").permitAll()
             .antMatchers("/api/users/**").hasAnyAuthority("USER", "ADMIN")
             .antMatchers("/api/**").hasAuthority("ADMIN")
         .anyRequest()
             .denyAll()
         .and()
         .addFilter(new JwtAuthenticationFilter(authenticationManager(), jwtService))
+        .addFilter(new SecondAuthenticationFilter(authenticationManager(), jwtService))
         .addFilter(new JwtAuthorizationFilter(authenticationManager(), jwtService))
         .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 

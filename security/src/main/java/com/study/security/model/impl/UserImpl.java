@@ -7,6 +7,7 @@ import com.study.security.model.entity.User;
 import com.study.security.model.service.IUserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +25,7 @@ public class UserImpl implements IUserService {
     @Override
     @Transactional(readOnly = true)
     public User findByUsername(String username) {
-        return userDao.findByUsername(username);
+        return userDao.findByUsername(username).orElseThrow(()-> new UsernameNotFoundException("Username not found"));
     }
 
     @Override

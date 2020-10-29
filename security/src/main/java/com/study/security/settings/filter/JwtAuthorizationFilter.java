@@ -1,4 +1,4 @@
-package com.study.security.securityconfig.jwt;
+package com.study.security.settings.filter;
 
 import java.io.IOException;
 import java.util.Set;
@@ -7,6 +7,9 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.study.security.settings.SecurityConstants;
+import com.study.security.settings.jwt.JwtService;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;

@@ -1,4 +1,4 @@
-package com.study.security.securityconfig.jwt;
+package com.study.security.settings.filter;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -12,9 +12,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.study.security.settings.SecurityConstants;
+import com.study.security.settings.jwt.JwtRequest;
+import com.study.security.settings.jwt.JwtResponse;
+import com.study.security.settings.jwt.JwtService;
+import com.study.security.settings.token.FirstAuthToken;
+
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -29,7 +35,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     public JwtAuthenticationFilter(AuthenticationManager authenticationManager, JwtService jwtService){
         this.authenticationManager = authenticationManager;
         this.JwtService = jwtService;
-        setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/api/auth", "POST"));
+        setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher(SecurityConstants.AUTH_PATH, HttpMethod.POST.name()));
     }
 
    
@@ -50,7 +56,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         }
 
         return authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(jwtRequest.getUsername(), jwtRequest.getPassword()));
+                new FirstAuthToken(jwtRequest.getUsername(), jwtRequest.getPassword()));
 
     }
 
@@ -68,8 +74,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         Map<String, Object> claims = new HashMap<String, Object>();
         claims.put("authorities", authorities);
-
-        System.out.println("asdasdasdasdaassd : " + authResult.toString());
 
         final String jwt = JwtService.generateJwt(subject, claims);
 

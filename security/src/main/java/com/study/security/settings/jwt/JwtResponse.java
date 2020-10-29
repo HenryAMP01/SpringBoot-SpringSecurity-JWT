@@ -1,4 +1,4 @@
-package com.study.security.securityconfig.jwt;
+package com.study.security.settings.jwt;
 
 import java.io.Serializable;
 import java.util.Objects;

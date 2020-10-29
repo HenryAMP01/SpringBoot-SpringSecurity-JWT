@@ -1,4 +1,4 @@
-package com.study.security.securityconfig.jwt;
+package com.study.security.settings.jwt;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import com.study.security.settings.SecurityConstants;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

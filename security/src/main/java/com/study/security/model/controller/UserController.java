@@ -11,6 +11,7 @@ import com.study.security.model.mapper.UserMapper;
 import com.study.security.model.service.IUserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,11 +28,19 @@ import org.springframework.web.bind.annotation.RestController;
 @CrossOrigin("*")
 public class UserController {
 
-    @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired
+    @Qualifier(value = "firstPasswordEncoder")
+    private PasswordEncoder firstPasswordEncoder;
 
-    @Autowired private UserMapper userMapper;
+    @Autowired
+    @Qualifier(value = "secondPasswordEncoder")
+    private PasswordEncoder secondPasswordEncoder;
 
-    @Autowired private IUserService userService;
+    @Autowired
+    private UserMapper userMapper;
+
+    @Autowired
+    private IUserService userService;
 
     @GetMapping
     public List<UserDTO> findAllUsers() {
@@ -45,7 +54,7 @@ public class UserController {
 
     @PostMapping
     public UserDTO saveUser(@Valid @RequestBody User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPassword(firstPasswordEncoder.encode(user.getPassword()));
         return userMapper.userToUserDTO(userService.saveUser(user));
     }
 
@@ -58,7 +67,7 @@ public class UserController {
 
             // userFound.setId(user.getId());
             userFound.setUsername(user.getUsername());
-            userFound.setPassword(passwordEncoder.encode(user.getPassword()));
+            userFound.setPassword(firstPasswordEncoder.encode(user.getPassword()));
             userFound.setAuthorities(user.getAuthorities());
             // userFound.setCreateAt(user.getCreateAt());
             userFound.setUpdateAt(Instant.now());
@@ -71,5 +80,13 @@ public class UserController {
     @DeleteMapping(value = "/{id}")
     public void deleteByUserId(@PathVariable Long id) {
         userService.deleteByUserId(id);
+    }
+
+    // Usuario con password encrypt diferente para validar con un authentication provider
+
+    @PostMapping("/difpass")
+    public UserDTO saveUserDifPass(@Valid @RequestBody User user) {
+        user.setPassword(secondPasswordEncoder.encode(user.getPassword()));
+        return userMapper.userToUserDTO(userService.saveUser(user));
     }
 }
